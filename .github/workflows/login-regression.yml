@@ -1,0 +1,55 @@
+name: Login Regression Tests
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  login-tests:
+    name: Run Login Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.20.4'  # Matching your local version
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run login regression tests
+        run: npx playwright test --config=tests/suites/login.suite.js
+        env:
+          CI: true
+          # Add any environment variables you need here
+          BASE_URL: https://demoqa.com
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+
+      - name: Publish Test Report
+        if: always()
+        uses: mikepenz/action-junit-report@v3
+        with:
+          report_paths: 'test-results/login-junit-results.xml'
+          check_name: 'Login Test Results'
+          fail_on_failure: true 

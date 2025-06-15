@@ -1,0 +1,123 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Performance Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr.pass { background-color: #d4edda; }
+                tr.fail { background-color: #f8d7da; }
+            </style>
+        </head>
+        <body>
+            <h1>Aggregated Performance Results</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test ID</th>
+                        <th>Scenario</th>
+                        <th>Duration (ms)</th>
+                        <th>Expected</th>
+                        <th>Actual</th>
+                        <th>Result</th>
+                        <th>Severity</th>
+                        <th>Error Message</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-001</td>
+                            <td>Valid user login</td>
+                            <td>2076</td>
+                            <td>success</td>
+                            <td>success</td>
+                            <td>pass</td>
+                            <td>High</td>
+                            <td></td>
+                            <td>Basic happy path scenario</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-002</td>
+                            <td>Invalid username</td>
+                            <td>6326</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>High</td>
+                            <td>Invalid username or password!</td>
+                            <td>Invalid username validation</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-003</td>
+                            <td>Invalid password</td>
+                            <td>6441</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>High</td>
+                            <td>Invalid username or password!</td>
+                            <td>Invalid password validation</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-004</td>
+                            <td>SQL Injection attempt</td>
+                            <td>6407</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>Critical</td>
+                            <td>Invalid username or password!</td>
+                            <td>SQL injection prevention</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-005</td>
+                            <td>XSS attack attempt</td>
+                            <td>6355</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>Critical</td>
+                            <td>Invalid username or password!</td>
+                            <td>XSS prevention</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-006</td>
+                            <td>Empty username</td>
+                            <td>5258</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>Medium</td>
+                            <td>Unknown error</td>
+                            <td>Empty field validation</td>
+                        </tr>
+                    
+                        <tr class="pass">
+                            <td>LOGIN-007</td>
+                            <td>Empty password</td>
+                            <td>5386</td>
+                            <td>failure</td>
+                            <td>failure</td>
+                            <td>pass</td>
+                            <td>Medium</td>
+                            <td>Unknown error</td>
+                            <td>Empty field validation</td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        </body>
+        </html>
+        

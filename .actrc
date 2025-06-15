@@ -1,0 +1,4 @@
+-P ubuntu-latest=node:18.20.4-slim
+--env-file=.env
+-s GITHUB_TOKEN
+--artifact-server-path=.artifacts 
