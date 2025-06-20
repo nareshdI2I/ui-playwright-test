@@ -32,7 +32,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run login regression tests
-        run: npx playwright test tests/login.e2e.spec.ts --project=chromium --reporter=html --headed=false
+        run: npx playwright test tests/login.e2e.spec.ts --project=chromium --reporter=html
 
       - name: Upload test results
         if: always()
