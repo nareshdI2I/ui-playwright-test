@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.8.0",
-    "@playwright/mcp": "^0.0.29",
     "allure-commandline": "^2.27.0",
     "csv-parse": "^5.6.0"
   }
