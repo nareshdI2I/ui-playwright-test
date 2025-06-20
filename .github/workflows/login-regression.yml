@@ -10,6 +10,9 @@ jobs:
   login-tests:
     name: Run Login Tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
     timeout-minutes: 30
 
     steps:
@@ -50,7 +53,7 @@ jobs:
 
       - name: Publish Test Report
         if: always()
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         with:
           report_paths: 'test-results/login-junit-results.xml'
           check_name: 'Login Test Results'
