@@ -15,13 +15,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.20.4'  # Matching your local version
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
@@ -30,11 +28,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run login regression tests
-        run: npx playwright test --config=tests/suites/login.suite.js
-        env:
-          CI: true
-          # Add any environment variables you need here
-          BASE_URL: https://demoqa.com
+        run: npx playwright test --config=tests/suites/login.suite.js --reporter=html
 
       - name: Upload test results
         if: always()
@@ -44,6 +38,14 @@ jobs:
           path: |
             test-results/
             playwright-report/
+          retention-days: 30
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-html-report
+          path: playwright-report/index.html
           retention-days: 30
 
       - name: Publish Test Report
