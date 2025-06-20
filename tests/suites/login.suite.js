@@ -1,8 +1,10 @@
 // @ts-check
 
+const path = require('path');
+
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    testDir: '../',
+    testDir: path.join(__dirname, '..'),
     testMatch: '**/login.spec.ts',
     use: {
         baseURL: 'https://demoqa.com',
