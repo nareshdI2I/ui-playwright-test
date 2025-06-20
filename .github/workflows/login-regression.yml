@@ -29,6 +29,8 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run login regression tests
         run: npx playwright test tests/login.e2e.spec.ts --project=chromium --reporter=html --headed=false
