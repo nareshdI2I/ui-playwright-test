@@ -30,7 +30,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run login regression tests
-        run: npm run test:suite -- LoginRegression Smoke
+        run: npm run test:suite -- LoginRegression Smoke -- --project=chromium-demoqa
 
       - name: Upload test results
         if: always()

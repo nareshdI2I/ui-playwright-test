@@ -70,7 +70,9 @@ export default class PerformanceReporter implements Reporter {
         const htmlPath = path.join(reportDir, `performance-${timestamp}.html`);
         fs.writeFileSync(htmlPath, htmlReport);
 
+        // eslint-disable-next-line no-console
         console.log(`\nPerformance report generated at ${reportPath}`);
+        // eslint-disable-next-line no-console
         console.log(`HTML report generated at ${htmlPath}`);
     }
 

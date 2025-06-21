@@ -43,6 +43,7 @@ export class PerformanceService {
     async captureMetrics(): Promise<PerformanceMetrics> {
         // Get metrics from CDP
         const cdpMetrics = await this.client.send('Performance.getMetrics');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const navigationTiming: any = await this.page.evaluate(() => {
             const timing = performance.getEntriesByType('navigation')[0];
             const paint = performance.getEntriesByType('paint');
@@ -52,6 +53,7 @@ export class PerformanceService {
                 navigationStart: timing.startTime,
                 loadTime: timing.loadEventEnd - timing.startTime,
                 domContentLoaded: timing.domContentLoadedEventEnd - timing.startTime,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 firstContentfulPaint: paint.find((p: any) => p.name === 'first-contentful-paint')?.startTime,
                 largestContentfulPaint: lcp?.startTime
             };
@@ -76,6 +78,7 @@ export class PerformanceService {
         return metrics;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private findMetric(metrics: any[], name: string): number {
         const metric = metrics.find(m => m.name === name);
         return metric ? metric.value : 0;

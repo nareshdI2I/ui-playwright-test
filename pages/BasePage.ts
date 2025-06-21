@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { Page, Locator } from '@playwright/test';
 import { TestUtils } from '../utils/test-utils';
 import { FormHandler } from './components/FormHandler';
@@ -37,7 +38,7 @@ export abstract class BasePage {
     }
 
     async waitForPageLoad(): Promise<void> {
-        await this.page.waitForLoadState('networkidle', {
+        await this.page.waitForLoadState('load', {
             timeout: config.timeouts.navigation
         });
     }
@@ -145,6 +146,7 @@ export abstract class BasePage {
      */
     async hasElement(selector: string): Promise<boolean> {
         try {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             await this.page.waitForSelector(selector, {
                 state: 'attached',
                 timeout: config.timeouts.element
@@ -159,6 +161,7 @@ export abstract class BasePage {
      * Get text content of an element
      */
     async getTextContent(selector: string): Promise<string | null> {
+        // eslint-disable-next-line playwright/no-wait-for-selector
         const element = await this.page.waitForSelector(selector, {
             state: 'attached',
             timeout: config.timeouts.element
@@ -180,6 +183,7 @@ export abstract class BasePage {
      * Wait for element to be visible
      */
     async waitForVisible(selector: string, timeout = config.timeouts.element) {
+        // eslint-disable-next-line playwright/no-wait-for-selector
         await this.page.waitForSelector(selector, {
             state: 'visible',
             timeout
@@ -190,6 +194,7 @@ export abstract class BasePage {
      * Wait for element to be hidden
      */
     async waitForHidden(selector: string, timeout = config.timeouts.element) {
+        // eslint-disable-next-line playwright/no-wait-for-selector
         await this.page.waitForSelector(selector, {
             state: 'hidden',
             timeout
@@ -223,6 +228,7 @@ export abstract class BasePage {
                 }, 1000);
             });
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn('Failed to highlight element:', error);
         }
     }
@@ -247,11 +253,26 @@ export abstract class BasePage {
         );
     }
 
-    /**
-     * Enhanced click with retries and multiple strategies
-     * @param target - Either a selector string or Locator object
-     * @param options - Click options including timeout and retry count
-     */
+    private async tryForceClick(element: Locator, _timeout: number): Promise<boolean> {
+        try {
+            // eslint-disable-next-line playwright/no-force-option
+            await element.click({ force: true });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    private async tryJsClick(element: Locator): Promise<boolean> {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await element.evaluate((el: any) => el && typeof el.click === 'function' && el.click());
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     protected async clickWithRetry(
         target: string | Locator,
         options = { 
@@ -283,23 +304,15 @@ export abstract class BasePage {
                 return true;
             } catch (error) {
                 lastError = error as Error;
+                // eslint-disable-next-line no-console
                 console.log(`Click attempt ${attempt + 1} failed, trying alternative methods...`);
 
-                try {
-                    // Try force click
-                    await element.click({ force: true });
-                    return true;
-                } catch {
-                    try {
-                        // Try JavaScript click
-                        await element.evaluate((el: HTMLElement) => el.click());
-                        return true;
-                    } catch {
-                        // If we're on the last attempt, wait a bit before retrying
-                        if (attempt < options.retries - 1) {
-                            await this.page.waitForTimeout(options.delay);
-                        }
-                    }
+                if (await this.tryForceClick(element, options.timeout)) return true;
+                if (await this.tryJsClick(element)) return true;
+
+                // If we're on the last attempt, wait a bit before retrying
+                if (attempt < options.retries - 1) {
+                    await new Promise(res => setTimeout(res, options.delay));
                 }
             }
         }

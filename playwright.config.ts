@@ -1,12 +1,14 @@
 import { PlaywrightTestConfig } from '@playwright/test';
 import { config as envConfig, currentEnv } from './config/env.config';
+import dotenv from 'dotenv';
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-require('dotenv').config();
+dotenv.config();
 
+// eslint-disable-next-line no-console
 console.log(`Running tests in environment: ${currentEnv}`);
 
 /**
@@ -40,13 +42,22 @@ const config: PlaywrightTestConfig = {
     },
     outputDir: 'test-results',
     
-    /* Configure project for Chrome browser */
+    /* Configure projects for different browsers and test sets */
     projects: [
         {
-            name: 'chromium',
+            name: 'chromium-demoqa',
+            // testMatch is removed, files will be passed via CLI by the suite runner
             use: {
                 browserName: 'chromium',
             },
+        },
+        {
+            name: 'w3schools',
+            // testMatch is removed, files will be passed via CLI by the suite runner
+            use: {
+                browserName: 'chromium',
+                baseURL: 'https://www.w3schools.com',
+            }
         }
     ],
 };

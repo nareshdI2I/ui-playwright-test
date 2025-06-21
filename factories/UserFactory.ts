@@ -40,7 +40,7 @@ export class UserFactory extends BaseFactory<User> {
     createInvalid(): Partial<User> {
         return {
             email: 'invalid-email',
-            password: '123', // Too short
+            password: this.faker.internet.password({ length: 2 }), // Too short but generated
             role: 'invalid-role' as UserRole,
             status: 'invalid-status' as UserStatus
         };

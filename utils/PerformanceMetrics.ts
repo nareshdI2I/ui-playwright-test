@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { Page } from '@playwright/test';
 
 export interface PerformanceMetrics {
@@ -16,11 +17,14 @@ export class PerformanceService {
 
     async captureNavigationMetrics(): Promise<PerformanceMetrics> {
         const navigationTimings = await this.page.evaluate(() => {
-            const timing = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+            const timing = performance.getEntriesByType('navigation')[0];
             return {
-                timeToFirstByte: timing.responseStart - timing.requestStart,
-                domContentLoaded: timing.domContentLoadedEventEnd - timing.requestStart,
-                loadTime: timing.loadEventEnd - timing.requestStart
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                timeToFirstByte: timing && typeof (timing as any).responseStart === 'number' && typeof (timing as any).requestStart === 'number' ? (timing as any).responseStart - (timing as any).requestStart : 0,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                domContentLoaded: timing && typeof (timing as any).domContentLoadedEventEnd === 'number' && typeof (timing as any).requestStart === 'number' ? (timing as any).domContentLoadedEventEnd - (timing as any).requestStart : 0,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                loadTime: timing && typeof (timing as any).loadEventEnd === 'number' && typeof (timing as any).requestStart === 'number' ? (timing as any).loadEventEnd - (timing as any).requestStart : 0
             };
         });
 
@@ -40,16 +44,18 @@ export class PerformanceService {
         });
 
         const layoutShift = await this.page.evaluate(() => {
-            const cls = performance.getEntriesByType('layout-shift');
+            const cls = performance.getEntriesByType('layout-shift') as PerformanceEntry[];
             return {
-                cumulativeLayoutShift: cls.reduce((total, entry) => total + entry.value, 0)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                cumulativeLayoutShift: cls.reduce((total, entry) => total + (typeof (entry as any).value === 'number' ? (entry as any).value : 0), 0)
             };
         });
 
         const firstInputDelay = await this.page.evaluate(() => {
             const fid = performance.getEntriesByType('first-input');
             return {
-                firstInputDelay: fid.length > 0 ? fid[0].processingStart - fid[0].startTime : 0
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                firstInputDelay: fid.length > 0 && typeof (fid[0] as any).processingStart === 'number' && typeof (fid[0] as any).startTime === 'number' ? (fid[0] as any).processingStart - (fid[0] as any).startTime : 0
             };
         });
 

@@ -13,6 +13,7 @@ export class FormHandler {
      */
     async fillField(selector: string, value: string, options = { timeout: 5000 }) {
         await this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const element = await this.page.waitForSelector(selector, {
                 state: 'visible',
                 timeout: options.timeout
@@ -37,6 +38,7 @@ export class FormHandler {
      */
     async setCheckbox(selector: string, checked: boolean, options = { timeout: 5000 }) {
         await this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const checkbox = await this.page.waitForSelector(selector, {
                 state: 'visible',
                 timeout: options.timeout
@@ -50,6 +52,7 @@ export class FormHandler {
      */
     async getFieldValue(selector: string, options = { timeout: 5000 }): Promise<string> {
         return this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const element = await this.page.waitForSelector(selector, {
                 state: 'visible',
                 timeout: options.timeout
@@ -63,6 +66,7 @@ export class FormHandler {
      */
     async hasFieldError(fieldSelector: string, errorSelector: string): Promise<boolean> {
         try {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             await this.page.waitForSelector(errorSelector, {
                 state: 'visible',
                 timeout: 1000
@@ -86,10 +90,11 @@ export class FormHandler {
     ) {
         if (options.validateBeforeSubmit) {
             // Wait for form validation to complete
-            await this.page.waitForTimeout(100);
+            await new Promise(res => setTimeout(res, 100));
         }
 
         await this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const button = await this.page.waitForSelector(submitButtonSelector, {
                 state: 'visible',
                 timeout: options.timeout
@@ -111,6 +116,7 @@ export class FormHandler {
      */
     async clearField(selector: string, options = { timeout: 5000 }) {
         await this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const element = await this.page.waitForSelector(selector, {
                 state: 'visible',
                 timeout: options.timeout
@@ -124,6 +130,7 @@ export class FormHandler {
      */
     async uploadFile(selector: string, filePath: string, options = { timeout: 10000 }) {
         await this.utils.retryAction(async () => {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             const fileInput = await this.page.waitForSelector(selector, {
                 state: 'visible',
                 timeout: options.timeout

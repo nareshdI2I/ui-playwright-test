@@ -1,21 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
-import testData from '../test-data/login-credentials.json';
+import { LoginPage } from '../../pages/demoqa/LoginPage';
+import testData from '../../test-data/login-credentials.json' assert { type: 'json' };
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-interface LoginTestData {
-    testId: string;
-    testCategory: string;
-    testScenario: string;
-    username: string;
-    password: string;
-    expectedResult: string;
-    preconditions: string;
-    testSteps: string;
-    severity: string;
-    remarks: string;
-}
+// Get __dirname equivalent for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Store performance results for all tests
 const performanceResults: {
@@ -41,10 +33,6 @@ test.describe('DemoQA Login Tests', () => {
     // Run all test cases
     for (const data of testData.testCases) {
         test(`[${data.testId}] ${data.testScenario}`, async () => {
-            console.log(`\nExecuting test: ${data.testId} - ${data.testScenario}`);
-            console.log(`Preconditions: ${data.preconditions}`);
-            console.log(`Test Steps: ${data.testSteps}`);
-
             // Measure performance
             const startTime = Date.now();
             const result = await loginPage.validateLogin(data);
@@ -67,8 +55,8 @@ test.describe('DemoQA Login Tests', () => {
                     // Verify username is displayed on profile page
                     const header = await loginPage.getProviderDashboardElement();
                     await expect(header).toBeVisible();
-                    const usernameText = await header.textContent();
-                    expect(usernameText, 'Username should be displayed on profile page').toBe(data.username);
+                    const usernameText = header;
+                    await expect(usernameText, 'Username should be displayed on profile page').toHaveText(data.username);
                 } else {
                     // Verify user remains on login page
                     const currentUrl = await loginPage.getCurrentUrl();
@@ -102,12 +90,17 @@ test.describe('DemoQA Login Tests', () => {
 
     test.afterAll(async () => {
         // Print performance summary table
+        // eslint-disable-next-line no-console
         console.log("\nAggregated Performance Results:");
+        // eslint-disable-next-line no-console
         console.log("| Test ID     | Scenario                | Duration (ms) | Expected | Actual   | Result | Severity | Error Message                | Remarks                 |");
+        // eslint-disable-next-line no-console
         console.log("|-------------|-------------------------|---------------|----------|----------|--------|----------|-----------------------------|-------------------------|");
         for (const r of performanceResults) {
-            console.log(`| ${r.testId.padEnd(11)}| ${r.testScenario.padEnd(24)}| ${r.duration.toString().padEnd(13)}| ${r.expected.padEnd(8)}| ${r.actual.padEnd(8)}| ${r.result.padEnd(6)}| ${r.severity.padEnd(8)}| ${r.errorMessage.substring(0,27).padEnd(29)}| ${r.remarks.substring(0,23).padEnd(25)}|`);
+            // eslint-disable-next-line no-console
+            console.log(`| ${r.testId.padEnd(11)}| ${r.testScenario.padEnd(24)}| ${r.duration.toString().padEnd(13)}| ${r.expected.padEnd(8)}| ${r.actual.padEnd(8)}| ${r.result.padEnd(6)}| ${r.severity.padEnd(8)}| ${r.errorMessage.padEnd(28)}| ${r.remarks.padEnd(24)}|`);
         }
+        // eslint-disable-next-line no-console
         console.log("\n");
 
         // Generate HTML report
@@ -166,6 +159,7 @@ test.describe('DemoQA Login Tests', () => {
         // Write HTML report to file
         const reportPath = path.join(__dirname, 'performance-report.html');
         fs.writeFileSync(reportPath, htmlReport);
+        // eslint-disable-next-line no-console
         console.log(`HTML report generated at: ${reportPath}`);
     });
 }); 

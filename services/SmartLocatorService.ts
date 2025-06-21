@@ -21,7 +21,7 @@ export class SmartLocatorService {
     private page: Page;
     private historyFile: string;
     private history: Record<string, LocatorHistory>;
-    private alternativeGenerators: ((selector: string) => string[])[];
+    private alternativeGenerators: ((selector: string) => string[])[] = [];
 
     constructor(page: Page, historyFile: string) {
         this.page = page;
@@ -54,7 +54,7 @@ export class SmartLocatorService {
                 `.container ${selector}`
             ],
             // Text-based selectors
-            (selector: string) => {
+            (_selector: string) => {
                 const textSelectors = [
                     'Invalid username or password!',
                     'Login',
@@ -70,13 +70,13 @@ export class SmartLocatorService {
                 `${selector}:last-child`
             ],
             // Role-based selectors
-            (selector: string) => [
+            (_selector: string) => [
                 'role=button',
                 'role=textbox',
                 'role=alert'
             ],
             // Attribute-based selectors
-            (selector: string) => [
+            (_selector: string) => [
                 '[type="text"]',
                 '[type="password"]',
                 '[type="submit"]'
@@ -90,9 +90,11 @@ export class SmartLocatorService {
                 const data = fs.readFileSync(this.historyFile, 'utf8');
                 const historyData: LocatorHistoryFile = JSON.parse(data);
                 this.history = historyData.entries;
+                // eslint-disable-next-line no-console
                 console.log(`Loaded locator history from ${this.historyFile}`);
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn(`Failed to load locator history: ${error}`);
             this.history = {};
         }
@@ -110,11 +112,9 @@ export class SmartLocatorService {
                 lastUpdated: new Date().toISOString()
             };
 
-            fs.writeFileSync(
-                this.historyFile,
-                JSON.stringify(historyData, null, 2)
-            );
+            fs.writeFileSync(this.historyFile, JSON.stringify(historyData, null, 2));
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn(`Failed to save locator history: ${error}`);
         }
     }
@@ -135,7 +135,11 @@ export class SmartLocatorService {
             // Wait for a short time to see if the element becomes visible
             await locator.waitFor({ state: 'visible', timeout: 1000 });
             return locator;
-        } catch {
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.warn(`Failed to find element with selector: ${selector}`);
+            // eslint-disable-next-line no-console
+            console.warn(`Error: ${error}`);
             return null;
         }
     }
@@ -227,6 +231,7 @@ export class SmartLocatorService {
         try {
             // Get surrounding HTML context
             const html = await this.page.evaluate((sel) => {
+                // eslint-disable-next-line no-undef
                 const element = document.querySelector(sel);
                 if (element) {
                     return element.parentElement?.innerHTML || 'No parent element found';
@@ -328,20 +333,26 @@ For more help, check the test automation documentation or contact the QA team.
         const reportPath = path.join(reportDir, `locator-report-${timestamp}.html`);
         fs.writeFileSync(reportPath, reportHtml);
 
-        // Log the report location to the console
+        // eslint-disable-next-line no-console
         console.log(`\nLocator Report generated at: ${reportPath}`);
-
-        // Attach report URL to the page for test runner
-        await this.page.evaluate((html) => {
-            const blob = new Blob([html], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            console.log(`SmartLocator Report URL: ${url}`);
-        }, reportHtml);
+        
+        // Generate a simple URL for easy access
+        const url = `file://${path.resolve(reportPath)}`;
+        // eslint-disable-next-line no-console
+        console.log(`SmartLocator Report URL: ${url}`);
     }
 
     /**
      * Generates an HTML report of locator usage and success rates
      */
+    private getStatusClass(successRate: string): string {
+        if (successRate === 'N/A') return 'neutral';
+        const rate = Number(successRate);
+        if (rate >= 90) return 'good';
+        if (rate >= 70) return 'moderate';
+        return 'poor';
+    }
+
     private generateLocatorReportHtml(report: {
         timestamp: string;
         url: string;
@@ -352,10 +363,7 @@ For more help, check the test automation documentation or contact the QA team.
                 ? ((data.successCount / (data.successCount + data.failureCount)) * 100).toFixed(1)
                 : 'N/A';
             
-            const statusClass = 
-                successRate === 'N/A' ? 'neutral' :
-                Number(successRate) >= 90 ? 'good' :
-                Number(successRate) >= 70 ? 'moderate' : 'poor';
+            const statusClass = this.getStatusClass(successRate);
 
             return `
                 <tr class="${statusClass}">

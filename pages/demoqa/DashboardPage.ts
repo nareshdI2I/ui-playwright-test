@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from '../BasePage';
 
 export class DashboardPage extends BasePage {
     private readonly welcomeMessage = '.welcome-message';
@@ -37,21 +37,18 @@ export class DashboardPage extends BasePage {
 
     async navigate() {
         await this.page.goto('/');
-    }
-
-    async clickElementsCard() {
-        await this.elementsCard.click();
+        await this.elementsCard.waitFor();
     }
 
     async clickAlertsFramesWindowsCard() {
+        const navigationPromise = this.page.waitForURL('**/alerts');
         await this.alertsFramesWindowsCard.click();
+        await navigationPromise;
     }
 
-    // Required by BasePage
     getPagePath(): string {
         return '';
     }
     
-    // Required by BasePage
     selectors = {};
 } 

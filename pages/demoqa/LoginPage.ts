@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from '../BasePage';
+import fs from 'fs';
 
 interface LoginData {
     username: string;
@@ -51,74 +52,21 @@ export class LoginPage extends BasePage {
     }
 
     /**
-     * Attempts to login with the provided credentials
+     * Fills login credentials and clicks the login button.
+     * It does not wait for the result of the login action.
      * @param username - Username
      * @param password - Password
-     * @returns Promise<boolean> - Whether the login was successful
      */
-    async login(username: string, password: string): Promise<boolean> {
-        try {
-            // Wait for the page to be ready
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.usernameInput, { state: 'visible', timeout: 10000 });
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.passwordInput, { state: 'visible', timeout: 10000 });
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.loginButton, { state: 'visible', timeout: 10000 });
-
-            // Validate empty fields before attempting login
-            if (!username.trim() || !password.trim()) {
-                return false;
-            }
-
-            // Fill in credentials
-            await this.usernameInput.fill(username);
-            await this.passwordInput.fill(password);
-
-            // Click login and wait for navigation or error
-            await Promise.all([
-                this.loginButton.click(),
-                // Wait for either navigation or error message
-                Promise.race([
-                    this.page.waitForNavigation({ timeout: 5000 }).catch(() => {}),
-                    // eslint-disable-next-line playwright/no-wait-for-selector
-                    this.page.waitForSelector(this.selectors.errorMessage, { timeout: 5000 }).catch(() => {}),
-                    // eslint-disable-next-line playwright/no-wait-for-selector
-                    this.page.waitForSelector(this.selectors.invalidMessage, { timeout: 5000 }).catch(() => {})
-                ])
-            ]);
-
-            // Check if we're on the profile page (success case)
-            const currentUrl = this.page.url();
-            if (currentUrl.includes('/profile')) {
-                return true;
-            }
-
-            // Check for error messages
-            // eslint-disable-next-line playwright/no-element-handle
-            const errorElement = await this.page.$(this.selectors.errorMessage);
-            // eslint-disable-next-line playwright/no-element-handle
-            const invalidElement = await this.page.$(this.selectors.invalidMessage);
-
-            // If either error element exists, login failed
-            return !(errorElement || invalidElement);
-
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Login attempt failed:', error);
-            return false;
-        }
+    async login(username: string, password: string): Promise<void> {
+        await this.usernameInput.fill(username);
+        await this.passwordInput.fill(password);
+        await this.loginButton.click();
     }
 
-    /**
-     * Gets the error message if present
-     */
     async getErrorMessage(): Promise<string> {
         try {
-            // Wait a bit for error messages to appear
             await new Promise(res => setTimeout(res, 1000));
 
-            // For empty fields, return specific message
             const username = await this.usernameInput.inputValue();
             const password = await this.passwordInput.inputValue();
             
@@ -129,7 +77,6 @@ export class LoginPage extends BasePage {
                 return 'Password cannot be empty';
             }
 
-            // Check both error message locations
             // eslint-disable-next-line playwright/no-element-handle
             const errorSelector = await this.page.$(this.selectors.errorMessage);
             if (errorSelector) {
@@ -144,7 +91,6 @@ export class LoginPage extends BasePage {
                 if (text && text.trim()) return text.trim();
             }
 
-            // If no specific error message found
             return 'Invalid username or password';
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -153,79 +99,98 @@ export class LoginPage extends BasePage {
         }
     }
 
-    /**
-     * Validates login with test data
-     * @param data - Login test data
-     * @returns Object containing test results
-     */
     async validateLogin(data: LoginData): Promise<LoginResult> {
         try {
-            // Wait for the page to be ready
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.usernameInput, { state: 'visible', timeout: 10000 });
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.passwordInput, { state: 'visible', timeout: 10000 });
-            // eslint-disable-next-line playwright/no-wait-for-selector
-            await this.page.waitForSelector(this.selectors.loginButton, { state: 'visible', timeout: 10000 });
+            // First, ensure we're on the login page
+            const currentUrl = this.page.url();
+            if (!currentUrl.includes('/login')) {
+                await this.goto();
+            }
 
-            // Fill in credentials
+            // Wait for page to be ready with shorter timeout and better error handling
+            try {
+                // eslint-disable-next-line playwright/no-wait-for-selector
+                await this.page.waitForSelector(this.selectors.usernameInput, { state: 'visible', timeout: 5000 });
+                // eslint-disable-next-line playwright/no-wait-for-selector
+                await this.page.waitForSelector(this.selectors.passwordInput, { state: 'visible', timeout: 5000 });
+                // eslint-disable-next-line playwright/no-wait-for-selector
+                await this.page.waitForSelector(this.selectors.loginButton, { state: 'visible', timeout: 5000 });
+            } catch (timeoutError) {
+                return {
+                    actualResult: 'failure',
+                    errorMessage: `Page elements not found: ${timeoutError instanceof Error ? timeoutError.message : 'Timeout waiting for login form'}`
+                };
+            }
+
+            // Clear fields before filling
+            await this.usernameInput.clear();
+            await this.passwordInput.clear();
+            
+            // Fill credentials
             await this.usernameInput.fill(data.username);
             await this.passwordInput.fill(data.password);
 
-            // Click login and wait for navigation
+            // Click login and wait for navigation or error
             await Promise.all([
                 this.loginButton.click(),
                 this.page.waitForNavigation({ timeout: 5000 }).catch(() => {})
             ]);
 
             // Check if we're on the profile page (success case)
-            const currentUrl = this.page.url();
-            if (currentUrl.includes('/profile')) {
-                // Wait for the profile page to load completely
-                // eslint-disable-next-line playwright/no-wait-for-selector
-                await this.page.waitForSelector(this.selectors.profileHeader, { state: 'visible', timeout: 10000 });
-                return { actualResult: 'success' };
+            const newUrl = this.page.url();
+            if (newUrl.includes('/profile')) {
+                try {
+                    // eslint-disable-next-line playwright/no-wait-for-selector
+                    await this.page.waitForSelector(this.selectors.profileHeader, { state: 'visible', timeout: 5000 });
+                    return { actualResult: 'success' };
+                } catch (profileError) {
+                    return {
+                        actualResult: 'failure',
+                        errorMessage: `Login succeeded but profile page not loaded: ${profileError instanceof Error ? profileError.message : 'Profile page timeout'}`
+                    };
+                }
             }
 
             // Check for error messages
-            // eslint-disable-next-line playwright/no-element-handle
-            const errorElement = await this.page.$(this.selectors.errorMessage);
-            // eslint-disable-next-line playwright/no-element-handle
-            const invalidElement = await this.page.$(this.selectors.invalidMessage);
+            try {
+                // eslint-disable-next-line playwright/no-element-handle
+                const errorElement = await this.page.$(this.selectors.errorMessage);
+                // eslint-disable-next-line playwright/no-element-handle
+                const invalidElement = await this.page.$(this.selectors.invalidMessage);
 
-            // If either error element exists, login failed
-            if (errorElement || invalidElement) {
-                const errorText = await this.getErrorMessage();
+                if (errorElement || invalidElement) {
+                    const errorText = await this.getErrorMessage();
+                    return {
+                        actualResult: 'failure',
+                        errorMessage: errorText
+                    };
+                }
+            } catch (errorCheckError) {
+                // If we can't check for errors, assume login failed
                 return {
                     actualResult: 'failure',
-                    errorMessage: errorText
+                    errorMessage: `Error checking login result: ${errorCheckError instanceof Error ? errorCheckError.message : 'Unknown error'}`
                 };
             }
 
-            return { actualResult: 'failure', errorMessage: 'Unknown error' };
+            return { actualResult: 'failure', errorMessage: 'Login failed - no error message found' };
 
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Login attempt failed:', error);
             return {
                 actualResult: 'failure',
-                errorMessage: error instanceof Error ? error.message : 'Unknown error'
+                errorMessage: error instanceof Error ? error.message : 'Unknown error during login'
             };
         }
     }
 
-    /**
-     * Gets the current username field value
-     */
     async getUsernameValue(): Promise<string> {
         // eslint-disable-next-line playwright/no-element-handle
         const input = await this.page.$(this.selectors.usernameInput);
         return input ? input.inputValue() : '';
     }
 
-    /**
-     * Gets the current password field value
-     */
     async getPasswordValue(): Promise<string> {
         // eslint-disable-next-line playwright/no-element-handle
         const input = await this.page.$(this.selectors.passwordInput);

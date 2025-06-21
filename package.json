@@ -2,6 +2,7 @@
   "name": "playwright-project",
   "version": "1.0.0",
   "description": "Playwright Test Automation Project",
+  "type": "module",
   "scripts": {
     "test": "playwright test",
     "test:login": "playwright test --config=tests/suites/login.suite.js",
@@ -13,7 +14,9 @@
     "report:generate": "allure generate ./allure-results --clean",
     "report:open": "allure open ./allure-report",
     "test:report:headed": "playwright test --headed --reporter=allure-playwright",
-    "test:suite": "node run-suite.js"
+    "test:suite": "node run-suite.js",
+    "test:w3": "playwright test --project=w3schools",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [
     "playwright"
@@ -30,8 +33,15 @@
     "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.29.0",
     "@faker-js/faker": "^9.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
     "allure-commandline": "^2.27.0",
-    "csv-parse": "^5.6.0"
+    "csv-parse": "^5.6.0",
+    "eslint": "^9.29.0",
+    "eslint-plugin-playwright": "^2.2.0",
+    "eslint-plugin-sonarjs": "^3.0.3",
+    "globals": "^16.2.0"
   }
 }

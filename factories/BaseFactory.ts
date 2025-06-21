@@ -44,9 +44,12 @@ export abstract class BaseFactory<T> {
 
     /**
      * Generate a random enum value
+     *
+     * @note This uses Math.random() which is not cryptographically secure, but is sufficient for test data generation.
      */
     protected randomEnum<E>(enumObj: { [s: string]: E }): E {
         const enumValues = Object.values(enumObj);
+        // eslint-disable-next-line sonarjs/pseudo-random
         const randomIndex = Math.floor(Math.random() * enumValues.length);
         return enumValues[randomIndex];
     }

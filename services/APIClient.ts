@@ -2,7 +2,7 @@ import { APIRequestContext, APIResponse, request } from '@playwright/test';
 import { config } from '../config/env.config';
 
 export class APIClient {
-    private request: APIRequestContext;
+    private request!: APIRequestContext;
     private authToken?: string;
 
     constructor() {
@@ -51,7 +51,8 @@ export class APIClient {
 
     async get<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
         const searchParams = params ? new URLSearchParams(params).toString() : '';
-        const url = `${endpoint}${searchParams ? `?${searchParams}` : ''}`;
+        const queryString = searchParams ? `?${searchParams}` : '';
+        const url = endpoint + queryString;
         
         const response = await this.request.get(url, {
             headers: this.getHeaders()

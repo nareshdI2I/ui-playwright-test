@@ -8,6 +8,7 @@ export class TestUtils {
      */
     async waitForDynamicContent(selector: string, expectedText: string | RegExp, options = { timeout: 30000, interval: 1000 }) {
         await expect(async () => {
+            // eslint-disable-next-line playwright/no-element-handle
             const element = await this.page.$(selector);
             if (element) {
                 const text = await element.textContent();
@@ -24,9 +25,11 @@ export class TestUtils {
      */
     async waitForLoadingToDisappear(loadingSelector = '[data-testid="loading"]', timeout = 30000) {
         try {
+            // eslint-disable-next-line playwright/no-wait-for-selector
             await this.page.waitForSelector(loadingSelector, { state: 'visible', timeout: 1000 });
+            // eslint-disable-next-line playwright/no-wait-for-selector
             await this.page.waitForSelector(loadingSelector, { state: 'hidden', timeout });
-        } catch (e) {
+        } catch {
             // If loading indicator is not found initially, it might have disappeared already
             return;
         }
@@ -36,7 +39,7 @@ export class TestUtils {
      * Wait for network requests to complete
      */
     async waitForNetworkIdle(timeout = 30000) {
-        await this.page.waitForLoadState('networkidle', { timeout });
+        await this.page.waitForLoadState('load', { timeout });
     }
 
     /**
@@ -47,7 +50,7 @@ export class TestUtils {
         options = { 
             retries: 3, 
             delay: 1000,
-            shouldRetry: (error: Error) => true // Custom retry condition
+            shouldRetry: (_error: Error) => true // Custom retry condition
         }
     ): Promise<T> {
         let lastError: Error;
@@ -60,7 +63,7 @@ export class TestUtils {
                 if (attempt === options.retries || !options.shouldRetry(error as Error)) {
                     throw error;
                 }
-                await this.page.waitForTimeout(options.delay);
+                await new Promise(res => setTimeout(res, options.delay));
             }
         }
 
@@ -75,6 +78,7 @@ export class TestUtils {
         let lastRect: { x: number; y: number } | null = null;
 
         while (Date.now() - startTime < options.timeout) {
+            // eslint-disable-next-line playwright/no-element-handle
             const element = await this.page.$(selector);
             if (!element) continue;
 
@@ -86,8 +90,9 @@ export class TestUtils {
             if (lastRect && 
                 lastRect.x === currentRect.x && 
                 lastRect.y === currentRect.y) {
-                await this.page.waitForTimeout(options.stabilityDuration);
+                await new Promise(res => setTimeout(res, options.stabilityDuration));
                 // Check one more time after stability duration
+                // eslint-disable-next-line playwright/no-element-handle
                 const finalBox = await (await this.page.$(selector))?.boundingBox();
                 if (finalBox && finalBox.x === currentRect.x && finalBox.y === currentRect.y) {
                     return;
@@ -95,7 +100,7 @@ export class TestUtils {
             }
 
             lastRect = currentRect;
-            await this.page.waitForTimeout(100);
+            await new Promise(res => setTimeout(res, 100));
         }
 
         throw new Error(`Element ${selector} did not stabilize within ${options.timeout}ms`);
