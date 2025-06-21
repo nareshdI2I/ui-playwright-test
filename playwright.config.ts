@@ -23,7 +23,10 @@ const config: PlaywrightTestConfig = {
     retries: process.env.CI ? 2 : 1,
     // Opt out of parallel tests on CI
     workers: process.env.CI ? 3 : 1,
-    reporter: 'html',
+    reporter: [
+        ['html'],
+        ['junit', { outputFile: 'test-results/login-junit-results.xml' }]
+    ],
     use: {
         baseURL: 'https://demoqa.com',
         trace: 'on-first-retry',
