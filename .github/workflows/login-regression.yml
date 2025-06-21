@@ -56,7 +56,7 @@ jobs:
         with:
           name: performance-reports
           path: |
-            tests/performance-report.html
+            tests/**/performance-report.html
             performance-reports/
           retention-days: 30
 
