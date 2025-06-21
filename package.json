@@ -12,9 +12,12 @@
     "test:report": "playwright test --reporter=allure-playwright",
     "report:generate": "allure generate ./allure-results --clean",
     "report:open": "allure open ./allure-report",
-    "test:report:headed": "playwright test --headed --reporter=allure-playwright"
+    "test:report:headed": "playwright test --headed --reporter=allure-playwright",
+    "test:suite": "node run-suite.js"
   },
-  "keywords": [],
+  "keywords": [
+    "playwright"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

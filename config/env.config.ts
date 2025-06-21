@@ -21,7 +21,7 @@ export interface EnvironmentConfig {
 
 const environments: Record<string, EnvironmentConfig> = {
     dev: {
-        baseUrl: 'http://localhost:3000',
+        baseUrl: 'https://demoqa.com',
         apiUrl: 'http://localhost:3001/api',
         credentials: {
             admin: {

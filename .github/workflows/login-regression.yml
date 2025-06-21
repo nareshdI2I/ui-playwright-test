@@ -30,7 +30,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run login regression tests
-        run: npx playwright test tests/login.e2e.spec.ts --project=chromium
+        run: npm run test:suite -- LoginRegression Smoke
 
       - name: Upload test results
         if: always()

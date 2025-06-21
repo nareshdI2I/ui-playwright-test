@@ -1,19 +1,20 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class DashboardPage {
-    private page: Page;
-
-    // Locators
+export class DashboardPage extends BasePage {
     private readonly welcomeMessage = '.welcome-message';
     private readonly userProfileButton = '#user-profile';
     private readonly logoutButton = '#logout-button';
     private readonly dashboardTitle = '.dashboard-title';
+    readonly elementsCard: Locator;
+    readonly alertsFramesWindowsCard: Locator;
 
     constructor(page: Page) {
-        this.page = page;
+        super(page);
+        this.elementsCard = page.locator('.card-body:has-text("Elements")');
+        this.alertsFramesWindowsCard = page.locator('.card-body:has-text("Alerts, Frame & Windows")');
     }
 
-    // Actions
     async getWelcomeMessage() {
         return await this.page.textContent(this.welcomeMessage);
     }
@@ -33,4 +34,24 @@ export class DashboardPage {
     async getDashboardTitle() {
         return await this.page.textContent(this.dashboardTitle);
     }
+
+    async navigate() {
+        await this.page.goto('/');
+    }
+
+    async clickElementsCard() {
+        await this.elementsCard.click();
+    }
+
+    async clickAlertsFramesWindowsCard() {
+        await this.alertsFramesWindowsCard.click();
+    }
+
+    // Required by BasePage
+    getPagePath(): string {
+        return '';
+    }
+    
+    // Required by BasePage
+    selectors = {};
 } 

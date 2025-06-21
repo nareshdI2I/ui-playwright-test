@@ -1,4 +1,5 @@
 import { PlaywrightTestConfig } from '@playwright/test';
+import { config as envConfig, currentEnv } from './config/env.config';
 
 /**
  * Read environment variables from file.
@@ -6,12 +7,14 @@ import { PlaywrightTestConfig } from '@playwright/test';
  */
 require('dotenv').config();
 
+console.log(`Running tests in environment: ${currentEnv}`);
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
     testDir: './tests',
-    timeout: 60000,
+    timeout: envConfig.timeouts.default,
     expect: {
         timeout: 10000
     },
@@ -25,10 +28,11 @@ const config: PlaywrightTestConfig = {
     workers: process.env.CI ? 3 : 1,
     reporter: [
         ['html'],
-        ['junit', { outputFile: 'test-results/login-junit-results.xml' }]
+        ['junit', { outputFile: 'test-results/login-junit-results.xml' }],
+        ['json', { outputFile: 'test-results/test-results.json' }]
     ],
     use: {
-        baseURL: 'https://demoqa.com',
+        baseURL: envConfig.baseUrl,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
